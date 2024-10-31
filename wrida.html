@@ -104,10 +104,20 @@
             font-size: 1.5rem;
         }
 
-        .output textarea {
+        /* Modified to use a div for output to allow HTML content */
+        .output-content {
             height: 150px;
             background-color: #f9f9f9;
-            cursor: default;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: yellow;
         }
 
         /* Responsive Design */
@@ -125,7 +135,7 @@
                 padding: 10px;
             }
 
-            .output textarea {
+            .output-content {
                 height: 130px;
             }
         }
@@ -144,7 +154,7 @@
                 padding: 10px;
             }
 
-            .output textarea {
+            .output-content {
                 height: 120px;
             }
         }
@@ -169,11 +179,12 @@
         <button id="sortButton">Sort Lines</button>
         <button id="copyButton">Copy Output</button>
         <button id="clearButton">Clear All</button>
+        <button id="exportButton">Export Output</button>
     </div>
     
     <div class="output">
         <h3>Sorted Output:</h3>
-        <textarea id="outputText" readonly placeholder="Sorted lines will appear here..."></textarea>
+        <div id="outputText" class="output-content" readonly></div>
     </div>
 </div>
 
@@ -181,6 +192,7 @@
     document.getElementById('sortButton').addEventListener('click', sortLines);
     document.getElementById('copyButton').addEventListener('click', copyOutput);
     document.getElementById('clearButton').addEventListener('click', clearAll);
+    document.getElementById('exportButton').addEventListener('click', exportOutput);
 
     function sortLines() {
         const input = document.getElementById('inputText').value;
@@ -209,31 +221,37 @@
 
         if (matchedLines.length === 0) {
             alert('No lines contain the specified keyword.');
-            document.getElementById('outputText').value = '';
+            document.getElementById('outputText').innerHTML = '';
             return;
         }
 
         // Combine matched lines first, then unmatched lines
         const combinedOutput = [...matchedLines, ...unmatchedLines].join('\n');
 
-        // Display the combined output
-        document.getElementById('outputText').value = combinedOutput;
+        // Highlight the keyword in matched lines
+        const highlightedOutput = combinedOutput.replace(new RegExp(`(${word})`, 'gi'), '<span class="highlight">$1</span>');
+
+        // Display the combined output with highlights
+        document.getElementById('outputText').innerHTML = highlightedOutput;
     }
 
     function copyOutput() {
         const outputText = document.getElementById('outputText');
-        outputText.select();
-        outputText.setSelectionRange(0, 99999); // For mobile devices
+        const range = document.createRange();
+        range.selectNodeContents(outputText);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
 
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                alert('Sorted text copied to clipboard.');
+                showTemporaryMessage('Sorted text copied to clipboard!', 'success');
             } else {
-                alert('Unable to copy text. Please try manually.');
+                showTemporaryMessage('Unable to copy text. Please try manually.', 'error');
             }
         } catch (err) {
-            alert('Unsupported browser. Please copy manually.');
+            showTemporaryMessage('Unsupported browser. Please copy manually.', 'error');
         }
 
         // Deselect the text
@@ -244,8 +262,45 @@
         if (confirm('Are you sure you want to clear all fields?')) {
             document.getElementById('inputText').value = '';
             document.getElementById('searchWord').value = '';
-            document.getElementById('outputText').value = '';
+            document.getElementById('outputText').innerHTML = '';
         }
+    }
+
+    function exportOutput() {
+        const output = document.getElementById('outputText').innerText;
+        if (!output) {
+            alert('There is no sorted output to export.');
+            return;
+        }
+
+        const blob = new Blob([output], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sorted_output.txt';
+        document.body.appendChild(a); // Append to body to make it clickable
+        a.click();
+        document.body.removeChild(a); // Remove after download
+        URL.revokeObjectURL(url);
+    }
+
+    function showTemporaryMessage(message, type) {
+        const msgDiv = document.createElement('div');
+        msgDiv.textContent = message;
+        msgDiv.style.position = 'fixed';
+        msgDiv.style.top = '20px';
+        msgDiv.style.right = '20px';
+        msgDiv.style.padding = '10px 20px';
+        msgDiv.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+        msgDiv.style.color = '#fff';
+        msgDiv.style.borderRadius = '5px';
+        msgDiv.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+        msgDiv.style.zIndex = '1000';
+        document.body.appendChild(msgDiv);
+
+        setTimeout(() => {
+            document.body.removeChild(msgDiv);
+        }, 3000);
     }
 </script>
 

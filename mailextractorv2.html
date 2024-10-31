@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Extractor</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      /* Colors based on the provided palette */
+      :root {
+        --primary-100: #2c3e50;
+        --primary-200: #3e5871;
+        --primary-300: #507192;
+        --accent-100: #e74c3c;
+        --background-100: #06090b;
+        --background-200: #0f171c;
+        --background-300: #18242c;
+        --text-100: #fbfcfc;
+        --text-200: #ecf1f1;
+        --text-300: #dee6e6;
+      }
+
+      body {
+        background-color: var(--background-100);
+        color: var(--text-100);
+      }
+
+      /* Custom scrollbar for text input and output */
+      textarea::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      textarea::-webkit-scrollbar-track {
+        background: var(--background-300);
+        border-radius: 5px;
+      }
+
+      textarea::-webkit-scrollbar-thumb {
+        background: var(--primary-300);
+        border-radius: 5px;
+      }
+
+      textarea::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-200);
+      }
+
+      /* Button styles using the color palette */
+      .btn {
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Specific button colors */
+      .btn-extract {
+        background-color: var(--primary-100);
+      }
+
+      .btn-copy {
+        background-color: var(--primary-200);
+      }
+
+      .btn-export {
+        background-color: var(--primary-300);
+      }
+
+      .btn-clear {
+        background-color: var(--accent-100);
+      }
+
+      .btn {
+        color: var(--text-100);
+      }
+
+      /* Modern header styling */
+      .modern-header {
+        background: var(--background-200);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .modern-header h1 {
+        font-size: 1.875rem; /* 30px */
+        font-weight: 700;
+        color: var(--text-200);
+      }
+
+      /* Modal styling */
+      .modal-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+
+      .modal-content {
+        background: var(--background-300);
+        color: var(--text-300);
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .close-button {
+        margin-top: 20px;
+        background: var(--accent-100);
+        color: var(--text-100);
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen transition-colors duration-300">
+    <div id="app">
+      <!-- Header Section -->
+      <header class="modern-header py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-envelope text-2xl" style="color: var(--text-100);"></i>
+            <h1>Email Extractor</h1>
+          </div>
+          <button @click="openHelp" class="btn bg-blue-500 text-white px-4 py-2 rounded-lg">
+            <i class="fas fa-question-circle mr-2"></i> Help
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="container mx-auto px-4 py-8">
+        <div class="bg-white shadow-lg rounded-lg p-6 max-w-lg lg:max-w-3xl mx-auto" style="background-color: var(--background-300);">
+          <div
+            id="error-message"
+            class="text-red-500 hidden mb-4"
+            aria-live="polite"
+          ></div>
+          <!-- Input Area -->
+          <div class="mb-6">
+            <label
+              for="input"
+              class="block font-semibold mb-2"
+              style="color: var(--text-200);"
+              >Enter text containing email addresses:</label
+            >
+            <textarea
+              v-model="inputText"
+              placeholder="Paste your text here..."
+              class="w-full h-32 p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+              aria-label="Input text"
+              style="background-color: var(--background-200); color: var(--text-100);"
+            ></textarea>
+          </div>
+          <!-- Sorting Options -->
+          <div class="mb-6">
+            <label
+              for="sort-select"
+              class="block font-semibold mb-2"
+              style="color: var(--text-200);"
+              >Sort by:</label
+            >
+            <select
+              v-model="sortOption"
+              class="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+              aria-label="Sort options"
+              style="background-color: var(--background-200); color: var(--text-100);"
+            >
+              <option value="none">None</option>
+              <option value="domain">Domain</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+          <!-- Buttons Section -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <button
+              @click="extractEmails"
+              class="btn btn-extract text-white px-4 py-2 rounded-lg"
+              aria-label="Extract emails"
+            >
+              <i class="fas fa-envelope mr-2"></i> Extract Emails
+            </button>
+            <button
+              @click="copyEmails"
+              class="btn btn-copy text-white px-4 py-2 rounded-lg"
+              aria-label="Copy emails"
+            >
+              <i class="fas fa-copy mr-2"></i> Copy Emails
+            </button>
+            <button
+              @click="exportEmails"
+              class="btn btn-export text-white px-4 py-2 rounded-lg"
+              aria-label="Export emails"
+            >
+              <i class="fas fa-file-export mr-2"></i> Export Emails
+            </button>
+            <button
+              @click="clearFields"
+              class="btn btn-clear text-white px-4 py-2 rounded-lg"
+              aria-label="Clear fields"
+            >
+              <i class="fas fa-trash mr-2"></i> Clear
+            </button>
+          </div>
+          <!-- Output Area -->
+          <div>
+            <label
+              for="emails"
+              class="block font-semibold mb-2"
+              style="color: var(--text-200);"
+              >Extracted Emails:</label
+            >
+            <textarea
+              v-model="extractedEmails"
+              readonly
+              class="w-full h-32 p-3 border rounded focus:outline-none transition duration-300"
+              aria-label="Extracted emails"
+              style="background-color: var(--background-200); color: var(--text-100);"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div v-if="showHelp" class="modal-background">
+          <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">How to Use the Email Extractor</h2>
+            <p>
+              This web application allows you to extract email addresses from
+              any text you input. Simply paste your text into the input area,
+              select how you want to sort the emails, and click "Extract Emails."
+              You can also copy, export, or clear the extracted emails using the buttons below.
+            </p>
+            <button @click="closeHelp" class="close-button">Close</button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Vue.js Script for Email Extraction -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          inputText: "",
+          extractedEmails: "",
+          sortOption: "none",
+          showHelp: false,
+        },
+        methods: {
+          extractEmails() {
+            const emailRegex =
+              /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}/g;
+            const matches = this.inputText.match(emailRegex);
+            const uniqueEmails = matches ? Array.from(new Set(matches)) : [];
+
+            if (uniqueEmails.length > 0) {
+              if (this.sortOption === "domain") {
+                uniqueEmails.sort((a, b) =>
+                  a.split("@")[1].localeCompare(b.split("@")[1])
+                );
+              } else if (this.sortOption === "name") {
+                uniqueEmails.sort((a, b) =>
+                  a.split("@")[0].localeCompare(b.split("@")[0])
+                );
+              }
+              this.extractedEmails = uniqueEmails.join("\n");
+              document.getElementById("error-message").classList.add("hidden");
+            } else {
+              this.extractedEmails = "";
+              const errorMessage = document.getElementById("error-message");
+              errorMessage.textContent = "No valid email addresses found.";
+              errorMessage.classList.remove("hidden");
+            }
+          },
+          copyEmails() {
+            const emails = this.extractedEmails;
+            if (emails) {
+              navigator.clipboard
+                .writeText(emails)
+                .then(() => alert("Emails copied to clipboard!"));
+            } else {
+              alert("No emails to copy.");
+            }
+          },
+          exportEmails() {
+            const emails = this.extractedEmails;
+            if (emails) {
+              const blob = new Blob([emails], { type: "text/plain" });
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(blob);
+              link.download = "extracted_emails.txt";
+              link.click();
+            } else {
+              alert("No emails to export.");
+            }
+          },
+          clearFields() {
+            if (confirm("Are you sure you want to clear the input and output fields?")) {
+              this.inputText = "";
+              this.extractedEmails = "";
+              document.getElementById("error-message").classList.add("hidden");
+            }
+          },
+          openHelp() {
+            this.showHelp = true;
+          },
+          closeHelp() {
+            this.showHelp = false;
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sort Lines by Specific Word</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="button"] {
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Sort Lines Containing a Specific Word</h2>
+    
+    <textarea id="textInput" placeholder="Enter your list of entries here, each entry on a new line"></textarea>
+    <br>
+    <input type="text" id="wordInput" placeholder="Enter the word to sort by">
+    <br>
+    <input type="button" value="Sort Lines" onclick="sortLines()">
+    
+    <h3>Sorted Output</h3>
+    <pre id="sortedOutput"></pre>
+
+    <script>
+        function sortLines() {
+            // Get the input values
+            const textInput = document.getElementById('textInput').value;
+            const word = document.getElementById('wordInput').value.trim();
+
+            // Split the input text into lines
+            const lines = textInput.split('\n');
+
+            // Separate lines containing the word from those that don't
+            const matchingLines = [];
+            const nonMatchingLines = [];
+
+            lines.forEach(line => {
+                if (line.includes(word)) {
+                    matchingLines.push(line);
+                } else {
+                    nonMatchingLines.push(line);
+                }
+            });
+
+            // Combine the sorted lines
+            const sortedLines = matchingLines.concat(nonMatchingLines);
+
+            // Display the sorted output
+            document.getElementById('sortedOutput').textContent = sortedLines.join('\n');
+        }
+    </script>
+</body>
+</html>

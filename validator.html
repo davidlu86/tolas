@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMTP Validator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+    <!-- Include jQuery before toastr.js -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f3f4f6;
+            color: #111827;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        body.dark {
+            background-color: #292e3b;
+            color: #FFFFFF;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.5s, color 0.5s;
+        }
+        body.dark .container {
+            background-color: #2C3A4F;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            background-color: #f9fafb;
+            color: #111827;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark .textarea {
+            background-color: #56647b;
+            color: #FFFFFF;
+            border-color: #FF4D4D;
+        }
+        .button {
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, border 0.3s;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        @media (min-width: 640px) {
+            .button {
+                width: auto;
+                padding: 10px 15px;
+                font-size: 1rem;
+                margin-bottom: 0;
+            }
+        }
+        .button-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        body.dark .button-primary {
+            background-color: #FF4D4D;
+        }
+        .button-primary:hover, .button-secondary:hover {
+            opacity: 0.9;
+        }
+        .button-primary:focus, .button-secondary:focus {
+            outline: 2px solid #FF4D4D;
+            outline-offset: 2px;
+        }
+        .button-secondary {
+            background-color: #4b5563;
+            color: white;
+        }
+        body.dark .button-secondary {
+            background-color: #2C3A4F;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9fafb;
+            color: #111827;
+            max-height: 300px;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        body.dark .output {
+            background-color: #2C3A4F;
+            color: #FFFFFF;
+        }
+        .output.show {
+            opacity: 1;
+        }
+        /* Floating Action Button (FAB) */
+        .fab {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #2563eb;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+        .fab:hover {
+            background-color: #1e40af;
+        }
+        body.dark .fab {
+            background-color: #FF4D4D;
+        }
+        .fab .icon {
+            font-size: 24px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header text-center mb-4">
+            <h2 class="text-xl font-semibold">SMTP Validator</h2>
+            <p class="text-sm text-gray-500">Enter each SMTP entry in the format: host|port|user|password</p>
+            <p class="text-xs text-red-500">Warning: Ensure you handle SMTP credentials securely. Do not use real credentials for testing purposes.</p>
+        </div>
+        <textarea id="smtpInput" class="textarea" placeholder="e.g., smtp.example.com|587|user@example.com|password" aria-label="SMTP Input Field"></textarea>
+        <div class="flex flex-col sm:flex-row sm:space-x-2 mb-4 justify-center">
+            <button class="button button-primary" onclick="validateSMTPs()" aria-label="Validate SMTP Entries">Validate</button>
+            <button class="button button-primary" onclick="copyValidEntries()" aria-label="Copy Valid Entries">Copy</button>
+            <button class="button button-secondary" onclick="clearFields()" aria-label="Clear Fields">Clear</button>
+            <input type="file" id="fileInput" class="hidden" accept=".txt, .csv" onchange="importFile(event)" aria-label="File Input">
+            <button class="button button-primary" onclick="document.getElementById('fileInput').click()" aria-label="Import File">Import</button>
+            <button class="button button-primary" onclick="downloadValidEntries()" aria-label="Download Valid Entries">Download</button>
+        </div>
+        <!-- Floating Action Button (FAB) -->
+        <button class="fab" onclick="toggleTheme()" aria-label="Toggle Dark Mode">
+            <span class="icon">☀️</span>
+        </button>
+        <div class="output" id="output" aria-live="polite"></div>
+    </div>
+
+     <script>
+        let validSMTPEntries = [];
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const isDarkMode = document.body.classList.contains('dark');
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        }
+
+        // Set theme based on stored preference
+        window.addEventListener('load', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+            }
+        });
+
+        function validateSMTPs() {
+            const input = document.getElementById('smtpInput').value.trim();
+            const output = document.getElementById('output');
+            const lines = input.split('\n');
+            const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const validPattern = /^([a-zA-Z0-9.-]+)\|(\d+)\|([^\|]+)\|([^\|]+)$/;
+
+            let validCount = 0;
+            let invalidTotalCount = 0;
+            validSMTPEntries = [];
+
+            output.innerHTML = ''; // Clear previous output
+
+            lines.forEach((line, index) => {
+                const trimmedLine = line.trim();
+                if (validPattern.test(trimmedLine)) {
+                    const [host, port] = trimmedLine.split('|');
+                    if (!domainPattern.test(host) || isNaN(port) || port <= 0 || port > 65535) {
+                        output.innerHTML += `<p class="text-red-500">Invalid format on line ${index + 1}: ${trimmedLine}</p>`;
+                        invalidTotalCount++;
+                    } else {
+                        validSMTPEntries.push(trimmedLine);
+                        validCount++;
+                    }
+                } else {
+                    output.innerHTML += `<p class="text-red-500">Invalid format on line ${index + 1}: ${trimmedLine}</p>`;
+                    invalidTotalCount++;
+                }
+            });
+
+            output.innerHTML += `
+                <h3 class="text-lg font-semibold">Validation Results</h3>
+                <p><span class="text-green-600">Valid SMTPs: ${validCount}</span>, 
+                <span class="text-red-600">Invalid SMTPs: ${invalidTotalCount}</span></p>
+            `;
+            output.classList.add('show');
+        }
+
+		toastr.options = {
+        "positionClass": "toast-bottom-center", // Change this as needed
+        "closeButton": true,
+        "progressBar": true,
+        "timeOut": "3000",
+		"preventDuplicates": true,
+    };
+
+        function copyValidEntries() {
+            if (validSMTPEntries.length === 0) {
+                toastr.error("No valid entries to copy.");
+                return;
+            }
+
+            const csvContent = validSMTPEntries.join('\n');
+            navigator.clipboard.writeText(csvContent)
+                .then(() => toastr.success("Valid entries copied to clipboard!"))
+                .catch(() => toastr.error("Failed to copy entries."));
+        }
+
+        function clearFields() {
+            document.getElementById('smtpInput').value = '';
+            document.getElementById('output').innerHTML = '';
+            validSMTPEntries = [];
+        }
+
+        function importFile(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('smtpInput').value = e.target.result;
+                validateSMTPs();
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadValidEntries() {
+            if (validSMTPEntries.length === 0) {
+                toastr.error("No valid entries to download.");
+                return;
+            }
+
+            const csvContent = validSMTPEntries.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'valid_smtp_entries.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

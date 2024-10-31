@@ -66,10 +66,16 @@
             outline: none;
         }
 
+        /* Specific styling for the input textarea to display at least 5 lines */
+        #inputText {
+            min-height: calc(1.5em * 5 + 24px); /* 1.5em line-height * 5 lines + padding */
+        }
+
         .button-group {
             display: flex;
             gap: 10px;
             margin-top: 10px;
+            flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
         }
 
         button {
@@ -151,7 +157,7 @@
     
     <div class="form-group">
         <label for="inputText">Enter Your Text:</label>
-        <textarea id="inputText" placeholder="Type or paste your text here..."></textarea>
+        <textarea id="inputText" rows="5" placeholder="Type or paste your text here..."></textarea>
     </div>
     
     <div class="form-group">

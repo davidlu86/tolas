@@ -2,63 +2,246 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Sort Lines Containing a Specific Word</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sort Lines by Specific Word</title>
     <style>
+        /* Reset CSS */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px; /* Added padding for better spacing on very small screens */
         }
-        textarea {
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 100%;
-            height: 150px;
-            margin-bottom: 10px;
+            max-width: 900px; /* Increased max-width for wider desktop view */
         }
-        input[type="text"], input[type="button"] {
-            padding: 10px;
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a90e2;
+            font-size: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        .output {
+            margin-top: 25px;
+        }
+
+        .output h3 {
             margin-bottom: 10px;
+            color: #4a90e2;
+            font-size: 1.5rem;
+        }
+
+        .output textarea {
+            height: 150px;
+            background-color: #f9f9f9;
+            cursor: default;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h2 {
+                font-size: 1.75rem;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 10px;
+            }
+
+            .output textarea {
+                height: 130px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 10px;
+            }
+
+            .output textarea {
+                height: 120px;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Sort Lines Containing a Specific Word</h2>
+
+<div class="container">
+    <h2>Sort Lines by Keyword</h2>
     
-    <textarea id="textInput" placeholder="Enter your list of entries here, each entry on a new line"></textarea>
-    <br>
-    <input type="text" id="wordInput" placeholder="Enter the word to sort by">
-    <br>
-    <input type="button" value="Sort Lines" onclick="sortLines()">
+    <div class="form-group">
+        <label for="inputText">Enter Your Text:</label>
+        <textarea id="inputText" placeholder="Type or paste your text here..."></textarea>
+    </div>
     
-    <h3>Sorted Output</h3>
-    <pre id="sortedOutput"></pre>
+    <div class="form-group">
+        <label for="searchWord">Keyword to Filter:</label>
+        <input type="text" id="searchWord" placeholder="Enter the word to filter lines">
+    </div>
+    
+    <div class="button-group">
+        <button id="sortButton">Sort Lines</button>
+        <button id="copyButton">Copy Output</button>
+        <button id="clearButton">Clear All</button>
+    </div>
+    
+    <div class="output">
+        <h3>Sorted Output:</h3>
+        <textarea id="outputText" readonly placeholder="Sorted lines will appear here..."></textarea>
+    </div>
+</div>
 
-    <script>
-        function sortLines() {
-            // Get the input values
-            const textInput = document.getElementById('textInput').value;
-            const word = document.getElementById('wordInput').value.trim();
+<script>
+    document.getElementById('sortButton').addEventListener('click', sortLines);
+    document.getElementById('copyButton').addEventListener('click', copyOutput);
+    document.getElementById('clearButton').addEventListener('click', clearAll);
 
-            // Split the input text into lines
-            const lines = textInput.split('\n');
+    function sortLines() {
+        const input = document.getElementById('inputText').value;
+        const word = document.getElementById('searchWord').value.trim();
 
-            // Separate lines containing the word from those that don't
-            const matchingLines = [];
-            const nonMatchingLines = [];
-
-            lines.forEach(line => {
-                if (line.includes(word)) {
-                    matchingLines.push(line);
-                } else {
-                    nonMatchingLines.push(line);
-                }
-            });
-
-            // Combine the sorted lines
-            const sortedLines = matchingLines.concat(nonMatchingLines);
-
-            // Display the sorted output
-            document.getElementById('sortedOutput').textContent = sortedLines.join('\n');
+        if (!word) {
+            alert('Please enter a keyword to filter lines.');
+            return;
         }
-    </script>
+
+        // Split the input into lines
+        const lines = input.split('\n');
+
+        // Arrays to hold matched and unmatched lines
+        const matchedLines = [];
+        const unmatchedLines = [];
+
+        // Iterate through each line and categorize
+        lines.forEach(line => {
+            if (line.toLowerCase().includes(word.toLowerCase())) {
+                matchedLines.push(line);
+            } else {
+                unmatchedLines.push(line);
+            }
+        });
+
+        if (matchedLines.length === 0) {
+            alert('No lines contain the specified keyword.');
+            document.getElementById('outputText').value = '';
+            return;
+        }
+
+        // Combine matched lines first, then unmatched lines
+        const combinedOutput = [...matchedLines, ...unmatchedLines].join('\n');
+
+        // Display the combined output
+        document.getElementById('outputText').value = combinedOutput;
+    }
+
+    function copyOutput() {
+        const outputText = document.getElementById('outputText');
+        outputText.select();
+        outputText.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                alert('Sorted text copied to clipboard.');
+            } else {
+                alert('Unable to copy text. Please try manually.');
+            }
+        } catch (err) {
+            alert('Unsupported browser. Please copy manually.');
+        }
+
+        // Deselect the text
+        window.getSelection().removeAllRanges();
+    }
+
+    function clearAll() {
+        if (confirm('Are you sure you want to clear all fields?')) {
+            document.getElementById('inputText').value = '';
+            document.getElementById('searchWord').value = '';
+            document.getElementById('outputText').value = '';
+        }
+    }
+</script>
+
 </body>
 </html>

@@ -2,9 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sort Lines Containing a Specific Word</title>
+    <title>Text Line Sorter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* CSS Variables for Light and Dark Modes */
+        :root {
+            --background-color: #f0f2f5;
+            --text-color: #333;
+            --header-footer-bg: #4a90e2;
+            --header-footer-text: #fff;
+            --button-bg: #4a90e2;
+            --button-hover-bg: #357ab8;
+            --input-bg: #fff;
+            --input-border: #ccc;
+            --output-bg: #f9f9f9;
+            --highlight-bg: yellow;
+            --toast-bg-success: #28a745;
+            --toast-bg-error: #dc3545;
+        }
+
+        [data-theme="dark"] {
+            --background-color: #1e1e1e;
+            --text-color: #f0f0f0;
+            --header-footer-bg: #333;
+            --header-footer-text: #f0f0f0;
+            --button-bg: #555;
+            --button-hover-bg: #777;
+            --input-bg: #2e2e2e;
+            --input-border: #555;
+            --output-bg: #2e2e2e;
+            --highlight-bg: #ffeb3b;
+            --toast-bg-success: #4caf50;
+            --toast-bg-error: #f44336;
+        }
+
         /* Reset CSS */
         *, *::before, *::after {
             box-sizing: border-box;
@@ -14,29 +45,127 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            background-color: var(--background-color);
+            color: var(--text-color);
             line-height: 1.6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px; /* Added padding for better spacing on very small screens */
+            padding-top: 60px; /* Space for sticky header */
+            padding-bottom: 60px; /* Space for footer */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Classical Sticky Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--header-footer-bg);
+            color: var(--header-footer-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        header .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        header .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        header nav {
+            display: flex;
+            align-items: center;
+        }
+
+        header nav a {
+            margin-left: 15px;
+            color: var(--header-footer-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        header nav a:hover {
+            color: #ddd;
+        }
+
+        /* Dark Mode Toggle */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+
+        .toggle-container input {
+            display: none;
+        }
+
+        .toggle-slider {
+            width: 50px;
+            height: 24px;
+            background-color: #ccc;
+            border-radius: 34px;
+            position: relative;
+            transition: background-color 0.4s;
+        }
+
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.4s;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .toggle-slider::before {
+            transform: translateX(26px);
+        }
+
+        /* Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--header-footer-bg);
+            color: var(--header-footer-text);
+            text-align: center;
+            padding: 10px 0;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
         }
 
         .container {
-            background: #fff;
+            background: var(--input-bg);
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 900px; /* Increased max-width for wider desktop view */
+            max-width: 900px;
+            margin: 0 auto;
+            transition: background-color 0.3s;
         }
 
         h2 {
             text-align: center;
             margin-bottom: 20px;
-            color: #4a90e2;
+            color: var(--header-footer-bg);
             font-size: 2rem;
         }
 
@@ -50,25 +179,51 @@
             font-weight: 600;
         }
 
-        textarea, input[type="text"] {
+        textarea, input[type="text"], select {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--input-border);
             border-radius: 5px;
             resize: vertical;
             font-size: 16px;
             font-family: inherit;
-            transition: border-color 0.3s ease;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color 0.3s, background-color 0.3s, color 0.3s;
         }
 
-        textarea:focus, input[type="text"]:focus {
-            border-color: #4a90e2;
+        textarea::placeholder, input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        textarea:focus, input[type="text"]:focus, select:focus {
+            border-color: var(--header-footer-bg);
             outline: none;
         }
 
         /* Specific styling for the input textarea to display at least 5 lines */
         #inputText {
             min-height: calc(1.5em * 5 + 24px); /* 1.5em line-height * 5 lines + padding */
+            cursor: pointer;
+        }
+
+        .options-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .options-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        /* Drag-and-Drop within Textarea */
+        #inputText.dragover {
+            border-color: var(--header-footer-bg);
+            background-color: #f1f1f1;
+            color: var(--header-footer-bg);
         }
 
         .button-group {
@@ -81,7 +236,7 @@
         button {
             flex: 1;
             padding: 12px;
-            background-color: #4a90e2;
+            background-color: var(--button-bg);
             color: #fff;
             border: none;
             border-radius: 5px;
@@ -91,7 +246,7 @@
         }
 
         button:hover {
-            background-color: #357ab8;
+            background-color: var(--button-hover-bg);
         }
 
         .output {
@@ -100,30 +255,86 @@
 
         .output h3 {
             margin-bottom: 10px;
-            color: #4a90e2;
+            color: var(--header-footer-bg);
             font-size: 1.5rem;
         }
 
         /* Modified to use a div for output to allow HTML content */
         .output-content {
             height: 150px;
-            background-color: #f9f9f9;
+            background-color: var(--output-bg);
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--input-border);
             border-radius: 5px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .highlight {
-            background-color: yellow;
+            background-color: var(--highlight-bg);
         }
 
-        /* Responsive Design */
+        /* Progress Bar */
+        .progress-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 20px;
+            width: 0%;
+            background-color: var(--header-footer-bg);
+            transition: width 0.3s;
+        }
+
+        /* User Notifications (Toasts) */
+        .toast {
+            position: fixed;
+            bottom: 80px; /* Above the sticky footer */
+            right: 20px;
+            background-color: #333;
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            z-index: 1001;
+            min-width: 200px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transform: translateY(20px);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design Improvements */
         @media (max-width: 768px) {
-            .container {
-                padding: 25px;
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            header nav {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            header nav a {
+                margin-left: 0;
+                margin-right: 15px;
+                display: inline-block;
             }
 
             h2 {
@@ -141,8 +352,12 @@
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 20px;
+            header .logo img {
+                height: 30px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
             }
 
             h2 {
@@ -157,152 +372,370 @@
             .output-content {
                 height: 120px;
             }
+
+            .toast {
+                width: 90%;
+                right: 5%;
+            }
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-<div class="container">
-    <h2>Sort Lines by Keyword</h2>
-    
-    <div class="form-group">
-        <label for="inputText">Enter Your Text:</label>
-        <textarea id="inputText" rows="5" placeholder="Type or paste your text here..."></textarea>
+    <!-- Classical Sticky Header with Logo and Links -->
+    <header>
+        <div class="logo">
+            <img src="https://via.placeholder.com/40" alt="Logo">
+            <span>Text Line Sorter</span>
+        </div>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#features">Features</a>
+            <a href="#contact">Contact</a>
+            <div class="toggle-container" title="Toggle Dark Mode">
+                <input type="checkbox" id="darkModeToggle">
+                <label for="darkModeToggle" class="toggle-slider"></label>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Sort Lines by Keyword</h2>
+        
+        <!-- Merged Drag-and-Drop and Textarea -->
+        <div class="form-group">
+            <label for="inputText">Enter Your Text (Drag &amp; Drop TXT File or Click to Upload):</label>
+            <textarea id="inputText" rows="5" placeholder="Type or paste your text here..."></textarea>
+            <input type="file" id="fileInput" accept=".txt" style="display: none;">
+        </div>
+        
+        <div class="form-group">
+            <label for="searchWord">Keyword to Filter:</label>
+            <input type="text" id="searchWord" placeholder="Enter the word to filter lines">
+        </div>
+
+        <div class="options-group">
+            <input type="checkbox" id="highlightCheckbox">
+            <label for="highlightCheckbox">Highlight Keyword in Output</label>
+        </div>
+
+        <!-- Export Format Selection -->
+        <div class="form-group">
+            <label for="exportFormat">Select Export Format:</label>
+            <select id="exportFormat">
+                <option value="txt">TXT</option>
+                <option value="csv">CSV</option>
+            </select>
+        </div>
+        
+        <!-- Progress Indicator -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-bar-inner" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="sortButton">Sort Lines</button>
+            <button id="copyButton">Copy Output</button>
+            <button id="clearButton">Clear All</button>
+            <button id="exportButton">Export Output</button>
+        </div>
+        
+        <div class="output">
+            <h3>Sorted Output:</h3>
+            <div id="outputText" class="output-content" readonly></div>
+        </div>
     </div>
-    
-    <div class="form-group">
-        <label for="searchWord">Keyword to Filter:</label>
-        <input type="text" id="searchWord" placeholder="Enter the word to filter lines">
-    </div>
-    
-    <div class="button-group">
-        <button id="sortButton">Sort Lines</button>
-        <button id="copyButton">Copy Output</button>
-        <button id="clearButton">Clear All</button>
-        <button id="exportButton">Export Output</button>
-    </div>
-    
-    <div class="output">
-        <h3>Sorted Output:</h3>
-        <div id="outputText" class="output-content" readonly></div>
-    </div>
-</div>
 
-<script>
-    document.getElementById('sortButton').addEventListener('click', sortLines);
-    document.getElementById('copyButton').addEventListener('click', copyOutput);
-    document.getElementById('clearButton').addEventListener('click', clearAll);
-    document.getElementById('exportButton').addEventListener('click', exportOutput);
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Text Line Sorter. All rights reserved.</p>
+    </footer>
 
-    function sortLines() {
-        const input = document.getElementById('inputText').value;
-        const word = document.getElementById('searchWord').value.trim();
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
-        if (!word) {
-            alert('Please enter a keyword to filter lines.');
-            return;
-        }
-
-        // Split the input into lines
-        const lines = input.split('\n');
-
-        // Arrays to hold matched and unmatched lines
-        const matchedLines = [];
-        const unmatchedLines = [];
-
-        // Iterate through each line and categorize
-        lines.forEach(line => {
-            if (line.toLowerCase().includes(word.toLowerCase())) {
-                matchedLines.push(line);
-            } else {
-                unmatchedLines.push(line);
-            }
-        });
-
-        if (matchedLines.length === 0) {
-            alert('No lines contain the specified keyword.');
-            document.getElementById('outputText').innerHTML = '';
-            return;
-        }
-
-        // Combine matched lines first, then unmatched lines
-        const combinedOutput = [...matchedLines, ...unmatchedLines].join('\n');
-
-        // Highlight the keyword in matched lines
-        const highlightedOutput = combinedOutput.replace(new RegExp(`(${word})`, 'gi'), '<span class="highlight">$1</span>');
-
-        // Display the combined output with highlights
-        document.getElementById('outputText').innerHTML = highlightedOutput;
-    }
-
-    function copyOutput() {
+    <script>
+        // Elements
+        const sortButton = document.getElementById('sortButton');
+        const copyButton = document.getElementById('copyButton');
+        const clearButton = document.getElementById('clearButton');
+        const exportButton = document.getElementById('exportButton');
+        const inputText = document.getElementById('inputText');
+        const searchWord = document.getElementById('searchWord');
+        const highlightCheckbox = document.getElementById('highlightCheckbox');
         const outputText = document.getElementById('outputText');
-        const range = document.createRange();
-        range.selectNodeContents(outputText);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
+        const exportFormat = document.getElementById('exportFormat');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const toast = document.getElementById('toast');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
 
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showTemporaryMessage('Sorted text copied to clipboard!', 'success');
+        // Event Listeners
+        sortButton.addEventListener('click', sortLines);
+        copyButton.addEventListener('click', copyOutput);
+        clearButton.addEventListener('click', clearAll);
+        exportButton.addEventListener('click', exportOutput);
+        inputText.addEventListener('click', () => fileInput.click());
+        inputText.addEventListener('dragover', handleDragOver);
+        inputText.addEventListener('dragleave', handleDragLeave);
+        inputText.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+
+        // Function to Toggle Dark Mode
+        function toggleDarkMode() {
+            if (darkModeToggle.checked) {
+                body.setAttribute('data-theme', 'dark');
+                showToast('Dark Mode Enabled', 'success');
             } else {
-                showTemporaryMessage('Unable to copy text. Please try manually.', 'error');
+                body.setAttribute('data-theme', 'light');
+                showToast('Light Mode Enabled', 'success');
             }
-        } catch (err) {
-            showTemporaryMessage('Unsupported browser. Please copy manually.', 'error');
         }
 
-        // Deselect the text
-        window.getSelection().removeAllRanges();
-    }
-
-    function clearAll() {
-        if (confirm('Are you sure you want to clear all fields?')) {
-            document.getElementById('inputText').value = '';
-            document.getElementById('searchWord').value = '';
-            document.getElementById('outputText').innerHTML = '';
-        }
-    }
-
-    function exportOutput() {
-        const output = document.getElementById('outputText').innerText;
-        if (!output) {
-            alert('There is no sorted output to export.');
-            return;
+        // Function to Show Toast Notifications
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            if (type === 'success') {
+                toast.style.backgroundColor = 'var(--toast-bg-success)';
+            } else {
+                toast.style.backgroundColor = 'var(--toast-bg-error)';
+            }
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
-        const blob = new Blob([output], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'sorted_output.txt';
-        document.body.appendChild(a); // Append to body to make it clickable
-        a.click();
-        document.body.removeChild(a); // Remove after download
-        URL.revokeObjectURL(url);
-    }
+        // Drag and Drop Handlers
+        function handleDragOver(e) {
+            e.preventDefault();
+            inputText.classList.add('dragover');
+        }
 
-    function showTemporaryMessage(message, type) {
-        const msgDiv = document.createElement('div');
-        msgDiv.textContent = message;
-        msgDiv.style.position = 'fixed';
-        msgDiv.style.top = '20px';
-        msgDiv.style.right = '20px';
-        msgDiv.style.padding = '10px 20px';
-        msgDiv.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
-        msgDiv.style.color = '#fff';
-        msgDiv.style.borderRadius = '5px';
-        msgDiv.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-        msgDiv.style.zIndex = '1000';
-        document.body.appendChild(msgDiv);
+        function handleDragLeave(e) {
+            e.preventDefault();
+            inputText.classList.remove('dragover');
+        }
 
-        setTimeout(() => {
-            document.body.removeChild(msgDiv);
-        }, 3000);
-    }
-</script>
+        function handleDrop(e) {
+            e.preventDefault();
+            inputText.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            if (fileInput.files.length > 0) {
+                handleFile(fileInput.files[0]);
+            }
+        }
+
+        function handleFile(file) {
+            if (file.type !== 'text/plain') {
+                showToast('Only TXT files are allowed.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                inputText.value = event.target.result;
+                showToast('File uploaded successfully!', 'success');
+            };
+            reader.onerror = function() {
+                showToast('Error reading file.', 'error');
+            };
+            reader.readAsText(file);
+        }
+
+        // Sort Lines Function
+        function sortLines() {
+            const input = sanitizeInput(inputText.value);
+            const word = sanitizeInput(searchWord.value.trim());
+            const highlight = highlightCheckbox.checked;
+
+            if (!word) {
+                showToast('Please enter a keyword to filter lines.', 'error');
+                return;
+            }
+
+            // Show progress bar
+            showProgress();
+
+            setTimeout(() => { // Simulate processing delay
+                // Split the input into lines
+                const lines = input.split('\n');
+
+                // Arrays to hold matched and unmatched lines
+                const matchedLines = [];
+                const unmatchedLines = [];
+
+                // Iterate through each line and categorize
+                lines.forEach(line => {
+                    if (line.toLowerCase().includes(word.toLowerCase())) {
+                        matchedLines.push(line);
+                    } else {
+                        unmatchedLines.push(line);
+                    }
+                });
+
+                if (matchedLines.length === 0) {
+                    showToast('No lines contain the specified keyword.', 'error');
+                    outputText.innerHTML = '';
+                    hideProgress();
+                    return;
+                }
+
+                // Combine matched lines first, then unmatched lines
+                const combinedOutput = [...matchedLines, ...unmatchedLines].join('\n');
+
+                let displayOutput = combinedOutput;
+
+                if (highlight) {
+                    // Highlight the keyword in matched lines
+                    const regex = new RegExp(`(${escapeRegExp(word)})`, 'gi');
+                    displayOutput = combinedOutput.replace(regex, '<span class="highlight">$1</span>');
+                }
+
+                // Display the combined output with or without highlights
+                outputText.innerHTML = displayOutput;
+
+                showToast('Lines sorted successfully!', 'success');
+                hideProgress();
+            }, 500); // Adjust delay as needed
+        }
+
+        // Copy Output Function
+        function copyOutput() {
+            const outputDiv = outputText;
+            const range = document.createRange();
+            range.selectNodeContents(outputDiv);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('Sorted text copied to clipboard!', 'success');
+                } else {
+                    showToast('Unable to copy text. Please try manually.', 'error');
+                }
+            } catch (err) {
+                showToast('Unsupported browser. Please copy manually.', 'error');
+            }
+
+            // Deselect the text
+            window.getSelection().removeAllRanges();
+        }
+
+        // Clear All Function
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all fields?')) {
+                inputText.value = '';
+                searchWord.value = '';
+                highlightCheckbox.checked = false;
+                outputText.innerHTML = '';
+                fileInput.value = '';
+                showToast('All fields cleared.', 'success');
+            }
+        }
+
+        // Export Output Function
+        function exportOutput() {
+            const output = outputText.innerText;
+            const format = exportFormat.value;
+
+            if (!output) {
+                showToast('There is no sorted output to export.', 'error');
+                return;
+            }
+
+            let blob;
+            let filename;
+
+            if (format === 'txt') {
+                blob = new Blob([output], { type: 'text/plain' });
+                filename = 'sorted_output.txt';
+            } else if (format === 'csv') {
+                const csvContent = matchedUnmatchedToCSV(outputText.innerText);
+                blob = new Blob([csvContent], { type: 'text/csv' });
+                filename = 'sorted_output.csv';
+            } else {
+                showToast('Unsupported export format.', 'error');
+                return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a); // Append to body to make it clickable
+            a.click();
+            document.body.removeChild(a); // Remove after download
+            URL.revokeObjectURL(url);
+
+            showToast(`Output exported as ${filename}`, 'success');
+        }
+
+        // Convert Sorted Output to CSV Format
+        function matchedUnmatchedToCSV(text) {
+            const lines = text.split('\n');
+            const csvLines = ['Status,Content']; // Header
+
+            lines.forEach(line => {
+                const isMatched = line.toLowerCase().includes(searchWord.value.toLowerCase()) ? 'Matched' : 'Unmatched';
+                // Escape double quotes by doubling them
+                const escapedLine = line.replace(/"/g, '""');
+                csvLines.push(`"${isMatched}","${escapedLine}"`);
+            });
+
+            return csvLines.join('\n');
+        }
+
+        // Function to Show Progress Bar
+        function showProgress() {
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            // Simulate progress increment
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval);
+                } else {
+                    progress += Math.random() * 20; // Random increment for demonstration
+                    if (progress > 100) progress = 100;
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, 100);
+        }
+
+        // Function to Hide Progress Bar
+        function hideProgress() {
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+            }, 500);
+        }
+
+        // Function to Escape RegExp Special Characters
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Input Validation and Sanitization
+        function sanitizeInput(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+    </script>
 
 </body>
 </html>

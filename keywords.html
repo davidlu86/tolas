@@ -19,6 +19,7 @@
             --highlight-bg: yellow;
             --toast-bg-success: #28a745;
             --toast-bg-error: #dc3545;
+            --h2-color: var(--header-footer-bg);
         }
 
         [data-theme="dark"] {
@@ -34,6 +35,7 @@
             --highlight-bg: #ffeb3b;
             --toast-bg-success: #4caf50;
             --toast-bg-error: #f44336;
+            --h2-color: #f0f0f0;
         }
 
         /* Reset CSS */
@@ -80,16 +82,21 @@
             margin-right: 10px;
         }
 
+        header .logo span {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
         header nav {
             display: flex;
             align-items: center;
         }
 
         header nav a {
-            margin-left: 15px;
+            margin-left: 20px;
             color: var(--header-footer-text);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: bold;
             transition: color 0.3s;
         }
 
@@ -99,42 +106,47 @@
 
         /* Dark Mode Toggle */
         .toggle-container {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
+            position: relative;
+            width: 60px;
+            height: 34px;
             margin-left: 20px;
+            cursor: pointer;
         }
 
         .toggle-container input {
-            display: none;
+            opacity: 0;
+            width: 0;
+            height: 0;
         }
 
         .toggle-slider {
-            width: 50px;
-            height: 24px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-color: #ccc;
             border-radius: 34px;
-            position: relative;
             transition: background-color 0.4s;
         }
 
         .toggle-slider::before {
-            content: "";
             position: absolute;
-            width: 20px;
-            height: 20px;
-            left: 2px;
-            bottom: 2px;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
             background-color: white;
             border-radius: 50%;
             transition: transform 0.4s;
         }
 
-        input:checked + .toggle-slider {
+        .toggle-container input:checked + .toggle-slider {
             background-color: #2196F3;
         }
 
-        input:checked + .toggle-slider::before {
+        .toggle-container input:checked + .toggle-slider::before {
             transform: translateX(26px);
         }
 
@@ -165,8 +177,9 @@
         h2 {
             text-align: center;
             margin-bottom: 20px;
-            color: var(--header-footer-bg);
+            color: var(--h2-color);
             font-size: 2rem;
+            transition: color 0.3s;
         }
 
         .form-group {
@@ -204,7 +217,19 @@
         /* Specific styling for the input textarea to display at least 5 lines */
         #inputText {
             min-height: calc(1.5em * 5 + 24px); /* 1.5em line-height * 5 lines + padding */
-            cursor: pointer;
+            cursor: default; /* Change cursor to default since click upload is removed */
+        }
+
+        /* Prevent cursor pointer since click to upload is removed */
+        #inputText {
+            cursor: default;
+        }
+
+        /* Drag-and-Drop within Textarea */
+        #inputText.dragover {
+            border-color: var(--header-footer-bg);
+            background-color: #f1f1f1;
+            color: var(--header-footer-bg);
         }
 
         .options-group {
@@ -217,13 +242,6 @@
             margin-right: 10px;
             transform: scale(1.2);
             cursor: pointer;
-        }
-
-        /* Drag-and-Drop within Textarea */
-        #inputText.dragover {
-            border-color: var(--header-footer-bg);
-            background-color: #f1f1f1;
-            color: var(--header-footer-bg);
         }
 
         .button-group {
@@ -356,8 +374,13 @@
                 height: 30px;
             }
 
-            header h1 {
-                font-size: 1.8rem;
+            header .logo span {
+                font-size: 1.2rem;
+            }
+
+            header nav a {
+                margin-right: 10px;
+                font-size: 0.9rem;
             }
 
             h2 {
@@ -404,7 +427,7 @@
         
         <!-- Merged Drag-and-Drop and Textarea -->
         <div class="form-group">
-            <label for="inputText">Enter Your Text (Drag &amp; Drop TXT File or Click to Upload):</label>
+            <label for="inputText">Enter Your Text (Drag & Drop TXT File):</label>
             <textarea id="inputText" rows="5" placeholder="Type or paste your text here..."></textarea>
             <input type="file" id="fileInput" accept=".txt" style="display: none;">
         </div>
@@ -479,7 +502,6 @@
         copyButton.addEventListener('click', copyOutput);
         clearButton.addEventListener('click', clearAll);
         exportButton.addEventListener('click', exportOutput);
-        inputText.addEventListener('click', () => fileInput.click());
         inputText.addEventListener('dragover', handleDragOver);
         inputText.addEventListener('dragleave', handleDragLeave);
         inputText.addEventListener('drop', handleDrop);

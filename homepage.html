@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extended Circular Button Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .circle-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+        .main-button {
+            transition: all 0.3s ease-in-out;
+            transform-origin: center;
+            z-index: 10;
+        }
+        .secondary-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 5;
+        }
+        .circle-container.active .secondary-button {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* Add a subtle backdrop when buttons are active */
+        .circle-container.active::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.9); }
+            50% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(0.9); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="circle-container" id="buttonContainer">
+        <button 
+            id="mainButton"
+            class="main-button absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+                   w-24 h-24 bg-blue-500 rounded-full text-white 
+                   flex items-center justify-center 
+                   shadow-lg hover:shadow-xl 
+                   focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+        </button>
+
+        <!-- Secondary Buttons (5 buttons) -->
+		
+		<a href="/keywords.html">
+		<button 
+			id="secondaryButton1"
+			class="secondary-button w-auto bg-green-500 rounded-full 
+				   text-white flex items-center justify-center 
+				   shadow-md hover:bg-green-600 px-4 py-2"
+		>
+			Keyword List sorter
+		</button>
+		</a>
+        <button 
+            id="secondaryButton2"
+            class="secondary-button w-16 h-16 bg-red-500 rounded-full 
+                   text-white flex items-center justify-center 
+                   shadow-md hover:bg-red-600"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </button>
+        <button 
+            id="secondaryButton3"
+            class="secondary-button w-16 h-16 bg-purple-500 rounded-full 
+                   text-white flex items-center justify-center 
+                   shadow-md hover:bg-purple-600"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            </svg>
+        </button>
+        <button 
+            id="secondaryButton4"
+            class="secondary-button w-16 h-16 bg-yellow-500 rounded-full 
+                   text-white flex items-center justify-center 
+                   shadow-md hover:bg-yellow-600"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+            </svg>
+        </button>
+        <button 
+            id="secondaryButton5"
+            class="secondary-button w-16 h-16 bg-indigo-500 rounded-full 
+                   text-white flex items-center justify-center 
+                   shadow-md hover:bg-indigo-600"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('buttonContainer');
+            const mainButton = document.getElementById('mainButton');
+            const secondaryButtons = [
+                document.getElementById('secondaryButton1'),
+                document.getElementById('secondaryButton2'),
+                document.getElementById('secondaryButton3'),
+                document.getElementById('secondaryButton4'),
+                document.getElementById('secondaryButton5')
+            ];
+
+            function getExtendedPositions() {
+                const positions = [];
+                const radius = 250; // Increased radius for more distance
+                const angleStep = (2 * Math.PI) / secondaryButtons.length;
+
+                secondaryButtons.forEach((_, index) => {
+                    const angle = index * angleStep - Math.PI / 2; // Rotate to start from top
+                    const x = radius * Math.cos(angle);
+                    const y = radius * Math.sin(angle);
+                    positions.push({ x, y });
+                });
+
+                return positions;
+            }
+
+            mainButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Prevent immediate closing
+                container.classList.toggle('active');
+                
+                if (container.classList.contains('active')) {
+                    const positions = getExtendedPositions();
+                    
+                    secondaryButtons.forEach((button, index) => {
+                        button.style.transform = `translate(-50%, -50%) translate(${positions[index].x}px, ${positions[index].y}px) scale(1)`;
+                    });
+                } else {
+                    // Reset positions when closing
+                    secondaryButtons.forEach(button => {
+                        button.style.transform = 'translate(-50%, -50%) scale(0)';
+                    });
+                }
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (event) => {
+                if (!container.contains(event.target)) {
+                    container.classList.remove('active');
+                    secondaryButtons.forEach(button => {
+                        button.style.transform = 'translate(-50%, -50%) scale(0)';
+                    });
+                }
+            });
+			 // Close menu when ESC key is pressed
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    container.classList.remove('active');
+                    secondaryButtons.forEach(button => {
+                        button.style.transform = 'translate(-50%, -50%) scale(0)';
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
